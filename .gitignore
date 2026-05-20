@@ -1,0 +1,77 @@
+# ─── Build artifacts ─────────────────────────────────────────────
+/target
+/dist
+/coverage
+/.tsbuildinfo
+*.node
+*.tsbuildinfo
+
+# ─── Dependencies ────────────────────────────────────────────────
+/node_modules
+/.pnp
+/.pnp.js
+/.yarn/install-state.gz
+/.pnpm-store
+
+# ─── Per-platform native package outputs ─────────────────────────
+npm/*/media-core.node
+npm/*/*.node
+
+# ─── Environment ─────────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+
+# ─── Editor / IDE ────────────────────────────────────────────────
+.vscode/
+!.vscode/extensions.json
+!.vscode/settings.json.example
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ─── Logs ────────────────────────────────────────────────────────
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# ─── Rust ────────────────────────────────────────────────────────
+**/*.rs.bk
+*.pdb
+Cargo.lock.bak
+
+# ─── Profiling ───────────────────────────────────────────────────
+*.profraw
+*.profdata
+flamegraph.svg
+perf.data*
+callgrind.out.*
+
+# ─── OS ──────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+ehthumbs.db
+$RECYCLE.BIN/
+
+# ─── Tests output ────────────────────────────────────────────────
+/lcov.info
+/coverage.xml
+/junit.xml
+/.nyc_output
+
+# ─── Local notes / scratch ───────────────────────────────────────
+/.scratch
+/TODO.local.md
+/NOTES.local.md
+*.local.md
+
+# ─── NOTE ────────────────────────────────────────────────────────
+# index.js and index.d.ts ARE tracked as placeholders.
+# They are overwritten by `napi build` but committed so
+# `tsc --noEmit` and IDEs work before the first native build.
