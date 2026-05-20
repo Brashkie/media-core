@@ -68,11 +68,11 @@ export class MediaError extends Error {
     this.details = options.details ? Object.freeze({ ...options.details }) : undefined
 
     // Preserve a clean stack trace where V8 supports it.
-    if (typeof (Error as unknown as { captureStackTrace?: unknown }).captureStackTrace === 'function') {
-      ;(Error as unknown as { captureStackTrace: (t: object, c: Function) => void }).captureStackTrace(
-        this,
-        this.constructor,
-      )
+    const errorCtor = Error as unknown as {
+      captureStackTrace?: (target: object, constructorOpt?: (...args: unknown[]) => unknown) => void
+    }
+    if (typeof errorCtor.captureStackTrace === 'function') {
+      errorCtor.captureStackTrace(this, this.constructor as (...args: unknown[]) => unknown)
     }
   }
 
