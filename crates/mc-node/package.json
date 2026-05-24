@@ -1,0 +1,18 @@
+{
+  "name": "media-core-native",
+  "version": "0.1.2",
+  "private": true,
+  "description": "napi-rs bindings for @brashkie/media-core",
+  "napi": {
+    "binaryName": "media-core",
+    "targets": [
+      "x86_64-pc-windows-msvc",
+      "aarch64-pc-windows-msvc",
+      "x86_64-apple-darwin",
+      "aarch64-apple-darwin",
+      "x86_64-unknown-linux-gnu",
+      "x86_64-unknown-linux-musl",
+      "aarch64-unknown-linux-gnu"
+    ]
+  }
+}

@@ -29,6 +29,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.2] — 2025-01-15
+
+### Fixed
+- `tsup` DTS build failed because the auto-generated `index.d.ts` from napi
+  wasn't recognized as a module. `src/index.ts` now declares the native
+  addon's shape inline, decoupling the TypeScript layer from napi's codegen.
+- Native addon loading: `index.js` placeholder now gracefully stubs when
+  the `.node` binary is missing, throwing only on actual use.
+- ESM build: enabled `tsup` `shims: true` so the runtime `require()` of the
+  native addon works in both CJS and ESM outputs.
+
+### Changed
+- `MediaBuffer` is now exported as both a value (constructor) and a type alias.
+
+---
+
+## [0.1.1] — 2025-01-10
+
+### Fixed
+- CI/build: migrated from `@napi-rs/cli` v2 to v3 syntax (`--cargo-cwd` →
+  `--manifest-path` + `--package-json-path`).
+- napi v3 requires a `package.json` in the binding crate folder
+  (`crates/mc-node/package.json`) with `napi.binaryName` and `napi.targets`.
+  Added.
+- `scripts/create-npm-dirs.js` now also copies the `.node` binaries from
+  CI artifacts into each per-platform npm package directory — previously
+  only the `package.json` files were created, so the published packages
+  were missing the actual native binary.
+- `npm version` script no longer relies on `napi version` (changed in v3);
+  uses `scripts/sync-versions.js` instead to propagate version bumps.
+
+### Changed
+- Removed legacy `napi.triples` from root `package.json` (napi v3 reads
+  config from `crates/mc-node/package.json` instead).
+
+---
+
 ## [0.1.0] — 2025-01-01
 
 **First public release.** Foundation layer of the Kryx ecosystem.
@@ -99,5 +136,7 @@ This is a **pre-1.0 release**. The public API may change in minor versions befor
 
 ---
 
-[Unreleased]: https://github.com/Brashkie/media-core/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/Brashkie/media-core/compare/v0.1.2...HEAD
+[0.1.2]: https://github.com/Brashkie/media-core/compare/v0.1.1...v0.1.2
+[0.1.1]: https://github.com/Brashkie/media-core/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/Brashkie/media-core/releases/tag/v0.1.0
