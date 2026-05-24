@@ -176,8 +176,8 @@ jobs:
         run: ls -R artifacts
         shell: bash
 
-      - name: Move artifacts
-        run: npm run artifacts
+      - name: Create per-platform packages + move binaries
+        run: node scripts/create-npm-dirs.js
 
       - name: List npm dir
         run: ls -R ./npm

@@ -75,3 +75,7 @@ $RECYCLE.BIN/
 # index.js and index.d.ts ARE tracked as placeholders.
 # They are overwritten by `napi build` but committed so
 # `tsc --noEmit` and IDEs work before the first native build.
+
+
+# NPM auth tokens (NEVER commit these!)
+.npmrc

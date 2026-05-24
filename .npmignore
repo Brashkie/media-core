@@ -13,6 +13,10 @@ coverage/
 node_modules/
 *.tsbuildinfo
 .tsbuildinfo
+.npmrc
+yarn.lock
+pnpm-lock.yaml
+bun.lockb
 
 # ─── Per-platform npm folder (each platform pkg published separately) ─
 npm/
@@ -53,12 +57,19 @@ TODO.local.md
 NOTES.local.md
 *.local.md
 
-# ─── Internal docs that don't help consumers ─────────────────────
+# ───── Documentation (only README files go to npm) ─────
+docs/
 CONTRIBUTING.md
 CODE_OF_CONDUCT.md
 SECURITY.md
-docs/ARCHITECTURE.md
-docs/ROADMAP.md
+ROADMAP.md
+QUICKSTART.md
+TESTING-PLAN.md
 
 # ─── Source maps (optional — comment out to include) ─────────────
 # dist/*.map
+
+# ───── Environment ─────
+.env
+.env.*
+!.env.example
