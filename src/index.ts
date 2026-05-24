@@ -67,6 +67,13 @@ interface NativeAddon {
 let nativeAddon: NativeAddon
 
 try {
+  // We intentionally use a runtime `require()` so that:
+  //   - tsup keeps it as `require()` in the CJS output.
+  //   - tsup converts it via `shims: true` to `createRequire(import.meta.url)`
+  //     in the ESM output.
+  // A static `import` would bind at module-evaluation time and we'd lose the
+  // ability to throw a user-friendly error if the native binary is missing.
+  // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports
   nativeAddon = require('../index.js') as NativeAddon
 } catch (err) {
   const msg = err instanceof Error ? err.message : String(err)
