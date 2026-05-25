@@ -50,6 +50,7 @@
     "dist/",
     "index.js",
     "index.d.ts",
+    "media/",
     "README.md",
     "README.es.md",
     "LICENSE",
