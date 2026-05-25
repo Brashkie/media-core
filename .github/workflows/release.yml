@@ -16,22 +16,17 @@ on:
       - 'v*'
 
 jobs:
-  # ═══════════════════════════════════════════════════════════════════════════
-  # Build native binaries for all 7 platforms
-  # ═══════════════════════════════════════════════════════════════════════════
   build:
     strategy:
       fail-fast: false
       matrix:
         settings:
-          # macOS Intel (x64) - Cross-compile from ARM64 runner
           - host: macos-latest
             target: x86_64-apple-darwin
             build: |
               rustup target add x86_64-apple-darwin
               npm run build:native -- --target x86_64-apple-darwin
 
-          # macOS Apple Silicon (arm64)
           - host: macos-latest
             target: aarch64-apple-darwin
             build: npm run build:native -- --target aarch64-apple-darwin
@@ -79,7 +74,7 @@ jobs:
         uses: actions/setup-node@v4
         if: ${{ !matrix.settings.docker }}
         with:
-          node-version: 20
+          node-version: 18
           cache: npm
 
       - name: Install Rust
@@ -133,9 +128,6 @@ jobs:
             index.d.ts
           if-no-files-found: error
 
-  # ═══════════════════════════════════════════════════════════════════════════
-  # Publish to npm + GitHub Release
-  # ═══════════════════════════════════════════════════════════════════════════
   publish:
     name: Publish to npm
     runs-on: ubuntu-latest
@@ -150,7 +142,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 18
           cache: npm
           registry-url: 'https://registry.npmjs.org'
           always-auth: true
@@ -176,8 +168,8 @@ jobs:
         run: ls -R artifacts
         shell: bash
 
-      - name: Create per-platform packages + move binaries
-        run: node scripts/create-npm-dirs.js
+      - name: Move artifacts
+        run: npm run artifacts
 
       - name: List npm dir
         run: ls -R ./npm

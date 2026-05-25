@@ -633,6 +633,23 @@ describe('Pipeline', () => {
     expect(p.name).toBe('pipeline')
   })
 
+  it('constructor fallback name when options.name is undefined', () => {
+    // Bypass the builder (which always provides a name) to exercise the
+    // `options.name ?? 'pipeline'` fallback branch.
+    const p = new Pipeline([PassthroughStage], {})
+    expect(p.name).toBe('pipeline')
+  })
+
+  it('AbortSignal without reason throws a generic aborted error', async () => {
+    const ac = new AbortController()
+    const pipeline = Pipeline.builder()
+      .stage(PassthroughStage)
+      .signal(ac.signal)
+      .build()
+    ac.abort() // no reason — exercises the `?? new Error('aborted')` branch
+    await expect(pipeline.process({})).rejects.toBeInstanceOf(MediaError)
+  })
+
   it('short-circuits when all frames dropped mid-pipeline', async () => {
     let stage3Called = false
     const stage3: Stage = {

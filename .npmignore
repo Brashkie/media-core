@@ -1,4 +1,13 @@
-# ─── Source code (we ship dist/, not src/) ───────────────────────
+# ═════════════════════════════════════════════════════════════════════════════
+# @brashkie/media-core — .npmignore
+#
+# What ships in the published tarball: dist/, index.js, index.d.ts, README*,
+# LICENSE, NOTICE, CHANGELOG.md, and the media/logo.png referenced by README.
+#
+# Everything below is excluded. Stay minimal — smaller tarballs install faster.
+# ═════════════════════════════════════════════════════════════════════════════
+
+# ─── Source code (we ship compiled dist/, not src/) ─────────────────────────
 src/
 crates/
 __tests__/
@@ -7,21 +16,17 @@ scripts/
 docs/
 benches/
 
-# ─── Build artifacts that shouldn't ship ─────────────────────────
+# ─── Build artifacts that shouldn't ship ────────────────────────────────────
 target/
 coverage/
 node_modules/
 *.tsbuildinfo
 .tsbuildinfo
-.npmrc
-yarn.lock
-pnpm-lock.yaml
-bun.lockb
 
-# ─── Per-platform npm folder (each platform pkg published separately) ─
+# ─── Per-platform npm folder (published as separate packages) ───────────────
 npm/
 
-# ─── Tooling configs (irrelevant to consumers) ───────────────────
+# ─── Tooling configs (irrelevant to consumers) ──────────────────────────────
 .github/
 .vscode/
 .idea/
@@ -33,43 +38,34 @@ npm/
 tsup.config.ts
 vitest.config.ts
 tsconfig.json
+tsconfig.test.json
 Cargo.toml
 Cargo.lock
 rust-toolchain.toml
 build.rs
 
-# ─── Editor / OS ─────────────────────────────────────────────────
+# ─── Editor / OS junk ────────────────────────────────────────────────────────
 .DS_Store
 Thumbs.db
 *.swp
 *.swo
+*~
 
-# ─── Test / coverage output ──────────────────────────────────────
+# ─── Test / coverage output ─────────────────────────────────────────────────
 *.log
 lcov.info
 coverage.xml
 junit.xml
 .nyc_output
 
-# ─── Local notes ─────────────────────────────────────────────────
-.scratch/
-TODO.local.md
-NOTES.local.md
-*.local.md
-
-# ───── Documentation (only README files go to npm) ─────
-docs/
+# ─── Internal docs that don't help consumers ────────────────────────────────
 CONTRIBUTING.md
 CODE_OF_CONDUCT.md
 SECURITY.md
-ROADMAP.md
-QUICKSTART.md
-TESTING-PLAN.md
+docs/
 
-# ─── Source maps (optional — comment out to include) ─────────────
+# ─── Source maps — keep them (helps consumers debug) ─────────────────────────
+# (Don't uncomment unless you want a slightly smaller tarball at the cost
+#  of consumer DX)
 # dist/*.map
-
-# ───── Environment ─────
-.env
-.env.*
-!.env.example
+.npmrc

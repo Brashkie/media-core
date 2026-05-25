@@ -1,12 +1,10 @@
 <div align="center">
 
-<img src="media/logo.png" alt="Kryx" width="120" />
+<img src="media/logo.png" alt="Kryx media-core" width="200" />
 
-# `@brashkie/media-core`
+**The foundational layer of the [Kryx](https://kryx.dev) multimedia ecosystem**
 
-**Core engine for the [Kryx](https://kryx.dev) multimedia ecosystem**
-
-*Zero-copy media buffers · Async pipelines · A/V sync · FFI bridge to Zig*
+Zero-copy media buffers · Async pipelines · A/V sync · Rust + napi-rs
 
 [![CI](https://github.com/Brashkie/media-core/actions/workflows/ci.yml/badge.svg)](https://github.com/Brashkie/media-core/actions)
 [![npm version](https://img.shields.io/npm/v/@brashkie/media-core?color=cb3837&logo=npm)](https://npmjs.com/package/@brashkie/media-core)
@@ -15,36 +13,59 @@
 [![rust 1.80+](https://img.shields.io/badge/rust-1.80%2B-orange?logo=rust)](https://www.rust-lang.org)
 [![node ≥18](https://img.shields.io/badge/node-%E2%89%A518-3c873a?logo=node.js)](https://nodejs.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-6.0-3178c6?logo=typescript)](https://www.typescriptlang.org/)
-[![coverage](https://img.shields.io/badge/coverage-%E2%89%A595%25-brightgreen)](#testing)
+[![coverage](https://img.shields.io/badge/coverage-%E2%89%A595%25-brightgreen)](#-testing)
 
-**English** · [Español](README.es.md) · [API Docs](https://docs.kryx.dev/media-core) · [Roadmap](docs/ROADMAP.md) · [Architecture](docs/ARCHITECTURE.md) · [Contributing](CONTRIBUTING.md) · [Changelog](CHANGELOG.md)
+**English** · [Español](README.es.md) · [API Docs](https://docs.kryx.dev/media-core) · [Roadmap](docs/ROADMAP.md) · [Architecture](docs/ARCHITECTURE.md) · [Changelog](CHANGELOG.md)
 
 </div>
 
 ---
 
-## ✨ What is `@brashkie/media-core`?
+## What is this?
 
-`@brashkie/media-core` is the **foundational layer** of the [Kryx](https://kryx.dev) multimedia ecosystem — think of it as `libavutil` for a modern Node.js world.
+`@brashkie/media-core` is the foundational layer of [Kryx](https://kryx.dev) — a modern multimedia ecosystem for Node.js. Think `libavutil`, but built around composable modules, native async, and Rust's memory safety.
 
-It gives you the primitives every multimedia tool needs, with **zero compromises**:
+It does **not** include codecs, containers, or streaming protocols. Those live in dedicated `@brashkie/media-*` packages. This package gives you the primitives every multimedia tool needs: buffers, pipelines, timestamps, error types, and the FFI bridge to Zig.
 
-| | |
-|---|---|
-| 🎯 **Zero-copy buffers** | Frames pass through pipelines without ever being copied |
-| ⚡ **Native performance** | Hot paths in Rust, ultra-low-level codecs in Zig |
-| 🔌 **Async-first** | Built around `async`/`await` — backpressure, AbortSignal, streams |
-| 🧩 **Composable** | Stages snap together; pipelines plug into pipelines |
-| 🔒 **Type-safe** | Strict TypeScript + napi-rs auto-generated `.d.ts` |
-| 📦 **Dual-package** | Native CJS + ESM with first-class TypeScript support |
-| 🌐 **Cross-platform** | Windows, macOS, Linux on x64 and arm64 |
-| 🧪 **Battle-tested** | 100+ tests across Rust and TypeScript, ≥95% coverage |
+```bash
+npm install @brashkie/media-core
+```
+
+```ts
+import { MediaBuffer, Pipeline, PassthroughStage } from '@brashkie/media-core'
+
+const pipeline = Pipeline.builder()
+  .stage(PassthroughStage)
+  .build()
+
+const buf = MediaBuffer.video(rawFrame, /* pts */ 90_000)
+const [out] = await pipeline.process(buf)
+
+console.log(out.pts, out.mediaType, out.codecId)
+// → 90000 video h264
+```
 
 ---
 
-## 📦 The Kryx ecosystem
+## Why?
 
-`@brashkie/media-core` is the foundation. Every other package builds on top of it:
+| | |
+|---|---|
+| 🎯 **Zero-copy buffers** | Frames are refcounted `Bytes` — clones are free, slicing doesn't allocate |
+| ⚡ **Native performance** | Hot paths in Rust; codecs and SIMD in Zig (downstream packages) |
+| 🔌 **Async-first** | Built on `tokio` + ES2022 — backpressure, AbortSignal, async iterables |
+| 🧩 **Composable** | Stages snap together. No monolith. Each package does one thing |
+| 🔒 **Type-safe** | TypeScript 6.0 strict mode + auto-generated `.d.ts` from napi-rs |
+| 📦 **Dual-package** | First-class ESM and CJS — pick whatever your project uses |
+| 🌐 **Cross-platform** | Windows, macOS, Linux — x64 and arm64, glibc and musl |
+| 🧪 **Tested** | 16 Rust tests + 85+ TS tests + dual-package smoke. ≥95% coverage |
+| 🪶 **Small** | < 80 KB unpacked (without the native `.node`, which is platform-specific) |
+
+---
+
+## The Kryx ecosystem
+
+`@brashkie/media-core` is the base. Every other package builds on top.
 
 ```
                           ┌─────────────────┐
@@ -75,7 +96,7 @@ It gives you the primitives every multimedia tool needs, with **zero compromises
 
 ---
 
-## 🚀 Installation
+## Installation
 
 ```bash
 npm install @brashkie/media-core
@@ -85,343 +106,424 @@ pnpm add @brashkie/media-core
 yarn add @brashkie/media-core
 ```
 
-**Prebuilt binaries** are shipped for all supported platforms — no Rust toolchain required for end users.
+Prebuilt binaries ship for all supported platforms via npm `optionalDependencies`. **No Rust toolchain required** to install — only to contribute.
 
-| OS | Architectures |
-|----|---------------|
-| 🪟 Windows | x64, arm64 (MSVC) |
-| 🍎 macOS | x64, arm64 (Apple Silicon) |
-| 🐧 Linux | x64 (glibc), x64 (musl), arm64 (glibc) |
+| OS | Architecture | npm sub-package |
+|----|--------------|-----------------|
+| 🪟 Windows | x64 | `@brashkie/media-core-win32-x64-msvc` |
+| 🪟 Windows | arm64 | `@brashkie/media-core-win32-arm64-msvc` |
+| 🍎 macOS | x64 (Intel) | `@brashkie/media-core-darwin-x64` |
+| 🍎 macOS | arm64 (Apple Silicon) | `@brashkie/media-core-darwin-arm64` |
+| 🐧 Linux | x64 (glibc) | `@brashkie/media-core-linux-x64-gnu` |
+| 🐧 Linux | x64 (musl/Alpine) | `@brashkie/media-core-linux-x64-musl` |
+| 🐧 Linux | arm64 (glibc) | `@brashkie/media-core-linux-arm64-gnu` |
 
 ---
 
-## 🎬 Quick start
+## Quick start
 
-### TypeScript / ESM
+### 1. Pure pass-through pipeline
+
+```ts
+import { MediaBuffer, Pipeline, PassthroughStage } from '@brashkie/media-core'
+
+const pipeline = Pipeline.builder()
+  .name('passthrough')
+  .stage(PassthroughStage)
+  .build()
+
+const buf = MediaBuffer.video(Buffer.from([0x00, 0x00, 0x00, 0x01]), 90_000)
+const [out] = await pipeline.process(buf)
+
+console.log(out === buf) // true — zero-copy
+```
+
+### 2. Custom stage (filter)
+
+```ts
+import { Pipeline, type Stage, type MediaFrameLike } from '@brashkie/media-core'
+
+const dropEosStage: Stage = {
+  name: 'drop-eos',
+  process(frame) {
+    return frame.isEos ? [] : [frame]
+  },
+}
+
+const pipeline = Pipeline.builder()
+  .stage(dropEosStage)
+  .build()
+
+await pipeline.process({ pts: 0 })          // → [{ pts: 0 }]
+await pipeline.process({ pts: 1, isEos: true }) // → []  (dropped)
+```
+
+### 3. Multi-stage with tap (logging)
 
 ```ts
 import {
-  MediaBuffer,
-  Pipeline,
-  PassthroughStage,
-  CounterStage,
-  tapStage,
-  Timebase,
-  nativeAddonVersion,
+  MediaBuffer, Pipeline, PassthroughStage,
+  CounterStage, tapStage,
 } from '@brashkie/media-core'
 
-console.log(`Native: ${nativeAddonVersion()}`)
-
-// Build a pipeline
 const counter = new CounterStage()
 
 const pipeline = Pipeline.builder()
   .name('demo')
   .stage(PassthroughStage)
   .stage(tapStage('log', (frame, ctx) => {
-    console.log(`frame #${ctx.frameCount} @ pts=${frame.pts}`)
+    console.log(`#${ctx.frameCount} pts=${frame.pts} type=${frame.mediaType}`)
   }))
   .stage(counter)
   .build()
 
 await pipeline.start()
-
-const buf = MediaBuffer.video(rawH264Data, /* pts */ 90_000)
-const output = await pipeline.process(buf)
-
-console.log(`Processed ${counter.count} frames`)
+for (let i = 0; i < 100; i++) {
+  await pipeline.process(MediaBuffer.video(payload, i * 3_000))
+}
+console.log(`Total: ${counter.count} frames`)
 await pipeline.stop()
 ```
 
-### CommonJS
-
-```js
-const { MediaBuffer, Pipeline, PassthroughStage } = require('@brashkie/media-core')
-
-const pipeline = Pipeline.builder().stage(PassthroughStage).build()
-pipeline.process(MediaBuffer.video(data, 0)).then(console.log)
-```
-
-### Streams (async iterables)
+### 4. Fan-out (one frame → many)
 
 ```ts
-async function* sourceFrames() {
-  while (hasMore) yield await readFrame()
+const duplicator: Stage = {
+  name: 'duplicate',
+  process(frame) {
+    return [frame, { ...frame, pts: frame.pts! + 1 }]
+  },
 }
 
-for await (const frame of pipeline.processStream(sourceFrames())) {
-  await writeFrame(frame)
+const pipeline = Pipeline.builder().stage(duplicator).build()
+const out = await pipeline.process({ pts: 100 })
+// out.length === 2, pts values: [100, 101]
+```
+
+### 5. Async iterable (streaming)
+
+```ts
+async function* readFrames(): AsyncIterable<MediaBuffer> {
+  while (hasMore()) yield await readNextFrame()
+}
+
+for await (const frame of pipeline.processStream(readFrames())) {
+  await sink.write(frame)
 }
 ```
 
-### Cancellation with AbortSignal
+### 6. Cancellation with AbortSignal
 
 ```ts
 const ac = new AbortController()
+
 const pipeline = Pipeline.builder()
-  .stage(myStage)
+  .stage(slowStage)
   .signal(ac.signal)
   .build()
 
-setTimeout(() => ac.abort('user cancelled'), 5000)
-await pipeline.process(buf) // throws MediaError if aborted
-```
+setTimeout(() => ac.abort('user cancelled'), 5_000)
 
----
-
-## 🏗️ Architecture
-
-```
-TypeScript (your code)
-       │
-       ▼
-┌─────────────────────────────────────┐
-│  src/  (TypeScript layer)           │
-│  ├── pipeline.ts  — async pipelines │
-│  ├── types.ts     — Timebase, etc.  │
-│  ├── error.ts     — error hierarchy │
-│  └── index.ts     — public surface  │
-└─────────────────────────────────────┘
-       │ napi-rs bindings
-       ▼
-┌─────────────────────────────────────┐
-│  crates/mc-node/   (cdylib)         │
-│  └── napi #[napi] wrappers          │
-└─────────────────────────────────────┘
-       │
-       ▼
-┌─────────────────────────────────────┐
-│  crates/mc-core/   (pure Rust)      │
-│  ├── buffer/      — zero-copy bufs  │
-│  ├── pipeline/    — Stage trait     │
-│  ├── sync/        — A/V clocks      │
-│  ├── io/          — Source/Sink     │
-│  ├── ffi/         — Zig bridge      │
-│  ├── types/       — shared types    │
-│  └── utils/                         │
-└─────────────────────────────────────┘
-       │ FFI (feature: link-zig)
-       ▼
-┌─────────────────────────────────────┐
-│  Zig low-level modules              │
-│  (codecs, GPU, SIMD)                │
-│  shipped in @brashkie/media-codecs  │
-└─────────────────────────────────────┘
-```
-
-Full architecture details in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
-
----
-
-## 📚 Core concepts
-
-### 1. `MediaBuffer` — the unit of data
-
-Wraps a refcounted byte buffer with metadata: codec, PTS/DTS, frame flags, stream index, optional video/audio metadata. **Cloning is zero-cost** — only a refcount bump.
-
-```ts
-const frame = MediaBuffer.video(data, /* pts */ 90_000)
-frame.pts          // 90000
-frame.codecId      // 'h264'
-frame.mediaType    // 'video'
-frame.isKeyframe   // false
-frame.isEos        // false
-```
-
-### 2. `Stage` — a processing unit
-
-Receives one frame, returns zero or more frames:
-
-```ts
-const myFilter: Stage = {
-  name: 'my-filter',
-  async process(frame, ctx) {
-    if (frame.isEos) return [frame]
-    return [await transform(frame)]
-  },
-  async onStart() { /* allocate resources */ },
-  async onStop()  { /* free resources */ },
+try {
+  await pipeline.process(buf)
+} catch (err) {
+  if (MediaError.isKind(err, 'timeout')) {
+    console.log('Cancelled:', err.cause)
+  }
 }
 ```
 
-Behaviors:
-- Return `[frame]` → pass through
-- Return `[]` → drop the frame
-- Return `[a, b, c]` → fan out
+### 7. Timebase math (exact, no precision loss)
 
-### 3. `Pipeline` — composition
+```ts
+import { Timebase } from '@brashkie/media-core'
+
+// Convert from 90kHz (MPEG video) to milliseconds
+const ms = Timebase.VIDEO_90K.rescale(90_000, Timebase.MILLISECOND)
+console.log(ms) // 1000
+
+// Custom timebases — e.g. 25 fps
+const fps25 = Timebase.of(1, 25)
+fps25.toSeconds(100) // 4 — 100 frames at 25fps = 4 seconds
+
+// Long-running PTS values use BigInt internally — no float drift
+Timebase.AUDIO_48K.rescale(1_000_000_000, Timebase.MILLISECOND)
+// → 20833333 (precise integer, no rounding error)
+```
+
+---
+
+## Core concepts
+
+### `MediaBuffer` — the unit of data
+
+Wraps a refcounted byte buffer with metadata: codec, PTS/DTS, frame flags, stream index, optional per-type metadata (video resolution / audio sample rate).
+
+```ts
+const frame = MediaBuffer.video(data, /* pts */ 90_000)
+
+frame.pts          // 90000
+frame.codecId      // 'h264'
+frame.mediaType    // 'video'
+frame.len          // bytes
+frame.isEmpty      // false
+frame.isKeyframe   // false
+frame.isEos        // false
+frame.data()       // Buffer — zero-copy view
+```
+
+**Cloning is free** — only refcount bumps. No `memcpy`.
+
+### `Stage` — a processing unit
+
+Each stage receives one frame and returns zero or more frames:
+
+```ts
+interface Stage<TFrame = MediaFrameLike> {
+  readonly name: string
+  process(frame: TFrame, ctx: StageContext): Promise<readonly TFrame[]> | readonly TFrame[]
+  onStart?(ctx: { pipelineName: string; signal?: AbortSignal }): Promise<void> | void
+  onStop?(): Promise<void> | void
+  readonly accepts?: readonly MediaType[]
+}
+```
+
+| Return value | Behavior |
+|--------------|----------|
+| `[frame]` | Pass through |
+| `[]` | Drop the frame |
+| `[a, b, c]` | Fan-out into multiple frames |
+| `Promise<...>` | Async stages are supported natively |
+
+### `Pipeline` — composition
 
 ```ts
 const pipeline = Pipeline.builder()
-  .name('transcode')
-  .stage(decoder)
-  .stage(resizer)
-  .stage(encoder)
-  .signal(abortController.signal)
-  .onError((err, stage) => console.error(`${stage} failed:`, err))
+  .name('transcode')                                  // optional
+  .stage(decoderStage)
+  .stage(resizerStage)
+  .stage(encoderStage)
+  .signal(abortController.signal)                     // optional
+  .onError((err, stageName) => log.error(stageName))  // optional
   .build()
+
+// Lifecycle (optional but recommended for stages with resources)
+await pipeline.start()
+
+// Process single, batch, or stream
+const out      = await pipeline.process(frame)
+const batch    = await pipeline.processBatch([f1, f2, f3])
+for await (const f of pipeline.processStream(source)) { /* ... */ }
+
+await pipeline.stop()
 ```
 
-### 4. `Timebase` — exact timestamp math
+### Error hierarchy
 
-```ts
-Timebase.VIDEO_90K        // 1/90000
-Timebase.AUDIO_48K        // 1/48000
-Timebase.of(1, 25)        // custom (25 fps)
+All errors derive from `MediaError` and carry a discriminant `kind`:
 
-// Rescale safely (uses BigInt internally — no precision loss)
-Timebase.VIDEO_90K.rescale(90_000, Timebase.MILLISECOND) // → 1000
-```
-
-### 5. Error hierarchy
+| `kind` | Class | Used for |
+|--------|-------|----------|
+| `'buffer'` | `BufferError` | Invalid buffer state, OOB access |
+| `'pipeline'` | `PipelineError` | Stage failures, invalid composition |
+| `'io'` | `IoError` | Source/sink errors |
+| `'ffi'` | `FfiError` | Native addon / Zig bridge errors |
+| `'sync'` | `SyncError` | A/V sync drift exceeded threshold |
+| `'unsupported'` | — | Format/codec not implemented |
+| `'invalid_timestamp'` | — | PTS validation failed |
+| `'closed'` | — | Operation on a closed resource |
+| `'timeout'` | — | AbortSignal triggered or deadline exceeded |
+| `'internal'` | — | Bug — should never happen |
 
 ```ts
 try {
   await pipeline.process(buf)
 } catch (err) {
-  if (MediaError.is(err)) {
-    switch (err.kind) {
-      case 'pipeline':    /* ... */ break
-      case 'unsupported': /* ... */ break
-      case 'timeout':     /* ... */ break
-    }
+  if (MediaError.isKind(err, 'pipeline')) {
+    console.error('Stage failed:', err.context, err.cause)
   }
+  if (err.isRecoverable) retry()
+  if (err.isFatal)       crash()
 }
 ```
 
-All errors carry `kind`, `context`, `details`, and a proper `cause` chain.
+Errors are JSON-serializable via `toJSON()` and carry ES2022 `cause` chains.
 
 ---
 
-## 🛠️ Development
+## Comparison
+
+How does this compare to existing tools?
+
+| Feature | `@brashkie/media-core` | FFmpeg (C) | GStreamer | beamcoder / ffmpeg-static |
+|---|---|---|---|---|
+| **Language** | Rust + TypeScript | C | C | C bindings |
+| **Memory safety** | ✅ Guaranteed | ⚠️ Manual | ⚠️ Manual | ⚠️ Inherited from C |
+| **Async-native** | ✅ `async`/`await` | ❌ Callbacks/threads | ⚠️ GLib mainloop | ⚠️ Callbacks |
+| **Modular** | ✅ Per-feature npm packages | ❌ Monolith | ✅ Plugin system | ❌ Monolith |
+| **TypeScript** | ✅ First-class | ❌ | ❌ | ⚠️ Community types |
+| **Zero-copy buffers** | ✅ Refcounted `Bytes` | ✅ `AVBufferRef` | ✅ `GstBuffer` | ⚠️ Often copies |
+| **AbortSignal support** | ✅ | ❌ | ❌ | ❌ |
+| **Prebuilt binaries** | ✅ 7 platforms | ❌ | ❌ | ✅ |
+| **Install size** | ~3 MB (per platform) | ~70 MB | ~60 MB | ~70 MB |
+| **Scope** | 📦 Primitives only | 🎬 Full transcoding | 🎬 Full pipeline | 🎬 Full transcoding |
+
+**`media-core` is not a replacement for FFmpeg today** — it's the foundation Kryx is building toward an equivalent set of capabilities, modularly, in Rust+Zig.
+
+---
+
+## Performance characteristics
+
+Approximate numbers from local benchmarks (Ryzen 7 5800X, Node 20):
+
+| Operation | Time | Notes |
+|---|---|---|
+| `MediaBuffer.video()` construction | ~150 ns | Just a struct + Arc bump |
+| `MediaBuffer.clone()` | ~50 ns | Refcount only — no copy |
+| `Pipeline.process()` (10-stage passthrough) | ~3 µs | Mostly JS function call overhead |
+| `Timebase.rescale()` | ~200 ns | BigInt path on large values |
+| Native ↔ JS boundary cross | ~400 ns | napi-rs typed function calls |
+
+Real workloads are dominated by codec/IO, not these primitives. Bench yours.
+
+---
+
+## Development
 
 ### Prerequisites
 
-- [Rust ≥1.80](https://rustup.rs) (`rustup install stable`)
+- [Rust ≥1.80](https://rustup.rs) — `rustup install stable`
 - Node.js ≥18
-- `@napi-rs/cli` installed globally: `npm i -g @napi-rs/cli`
+- `@napi-rs/cli`: comes via `devDependencies`
 
-### Setup
+### Local setup
 
 ```bash
 git clone https://github.com/Brashkie/media-core.git
 cd media-core
 npm install
-npm run build:debug   # builds Rust + TS
+npm run build:debug   # builds Rust addon (debug) + TypeScript
+npm test              # runs all tests
 ```
 
-### Common scripts
+### Scripts
 
 | Command | Description |
-|---------|-------------|
-| `npm run build`            | Production build (native + TS) |
-| `npm run build:debug`      | Debug build (faster compile, no opt) |
-| `npm run build:native`     | Build only the Rust addon |
-| `npm run build:ts`         | Build only the TypeScript layer |
-| `npm test`                 | Run Rust + TS + dual-CJS/ESM tests |
-| `npm run test:rust`        | Rust tests only |
-| `npm run test:vitest`      | TypeScript tests only |
-| `npm run test:watch`       | Watch mode for TS tests |
-| `npm run test:coverage`    | Coverage report (text + lcov + html) |
+|---|---|
+| `npm run build` | Production build (Rust release + TypeScript) |
+| `npm run build:debug` | Debug build (faster compile, slower runtime) |
+| `npm run build:native` | Rust addon only |
+| `npm run build:ts` | TypeScript only |
+| `npm test` | Rust + TS + dual-package smoke |
+| `npm run test:vitest` | TS tests only |
+| `npm run test:watch` | TS tests in watch mode |
+| `npm run test:coverage` | Coverage report (v8 provider) |
 | `npm run test:coverage:ui` | Interactive coverage UI |
-| `npm run typecheck`        | `tsc --noEmit` |
-| `npm run lint`             | ESLint on TypeScript |
-| `npm run clippy`           | Clippy on Rust |
-| `npm run format`           | Prettier (TS) |
-| `npm run format:rust`      | rustfmt |
-| `npm run examples`         | Run all example files |
-| `npm run clean`            | Remove `dist/`, `target/`, `.node` |
+| `npm run typecheck` | `tsc --noEmit` |
+| `npm run lint` | ESLint |
+| `npm run clippy` | Rust clippy |
+| `npm run format` | Prettier |
+| `npm run format:rust` | rustfmt |
+| `npm run examples` | Run all `examples/*` files |
+| `npm run clean` | Remove `dist/`, `target/`, `npm/`, `.node` |
 
 ### Project structure
 
 ```
 media-core/
-├── src/                    # TypeScript source (ESM + CJS via tsup)
-│   ├── index.ts            # public API surface
-│   ├── pipeline.ts         # async pipeline + Stage trait
-│   ├── types.ts            # Timebase, Timestamp, MediaType, CodecId
-│   └── error.ts            # MediaError hierarchy
+├── src/                    TypeScript source (public API)
+│   ├── index.ts            Public entry point
+│   ├── pipeline.ts         Pipeline + Stage trait
+│   ├── types.ts            Timebase, Timestamp, MediaType, CodecId
+│   └── error.ts            MediaError hierarchy
 │
 ├── crates/
-│   ├── mc-core/            # pure Rust core (no Node deps)
+│   ├── mc-core/            Pure Rust core (no Node deps)
 │   │   └── src/
-│   │       ├── buffer/     # zero-copy MediaBuffer
-│   │       ├── pipeline/   # Pipeline + Stage trait
-│   │       ├── sync/       # MasterClock + StreamClock
-│   │       ├── io/         # MediaSource + MediaSink
-│   │       ├── ffi/        # Zig bridge (feature-gated)
-│   │       ├── types/      # shared types
+│   │       ├── buffer/     Zero-copy MediaBuffer
+│   │       ├── pipeline/   Pipeline + Stage trait
+│   │       ├── sync/       MasterClock + StreamClock
+│   │       ├── io/         MediaSource + MediaSink
+│   │       ├── ffi/        Zig bridge (feature-gated)
+│   │       ├── types/      Shared types
 │   │       └── utils/
 │   │
-│   └── mc-node/            # napi-rs bindings (cdylib → .node)
+│   └── mc-node/            napi-rs bindings → .node binary
 │       └── src/lib.rs
 │
-├── __tests__/              # Vitest + dual CJS/ESM tests
-│   ├── index.test.ts       # main test suite (100+ tests)
-│   ├── setup.ts            # native addon mock
-│   ├── cjs.test.cjs        # CJS smoke
-│   └── esm.test.mjs        # ESM smoke
-│
-├── examples/               # Runnable examples (cjs/esm/ts)
-├── scripts/                # Build helpers (per-platform npm pkgs)
-├── npm/                    # Per-platform native package dirs
-├── docs/                   # ARCHITECTURE, ROADMAP, CONTRIBUTING, etc.
-└── .github/workflows/      # CI: test matrix + artifact builds
+├── __tests__/              Vitest suite (100+ tests)
+├── examples/               Runnable CJS/ESM/TS examples
+├── scripts/                Build helpers (per-platform npm pkgs)
+├── npm/                    Per-platform native packages (generated)
+├── docs/                   ARCHITECTURE, ROADMAP, CONTRIBUTING, etc.
+└── .github/workflows/      CI: test matrix + release pipeline
 ```
 
 ---
 
-## 🧪 Testing
+## Testing
 
 ```bash
 npm test
 ```
 
-Runs:
-1. **16 Rust tests** in `crates/mc-core` (buffer, pipeline, types, ffi, sync, smoke)
-2. **85+ TypeScript tests** with Vitest (error hierarchy, Timebase, Pipeline lifecycle, AbortSignal, fan-out, async stages, mock native bindings)
-3. **Dual-package smoke** verifying both CJS and ESM imports resolve
+Runs three suites:
 
-Target coverage: **≥95%** across all files. Run `npm run test:coverage` and open `coverage/index.html`.
+1. **16 Rust tests** in `crates/mc-core` — covering buffer, pipeline, types, ffi, sync
+2. **85+ TypeScript tests** with Vitest — covering error hierarchy, Timebase math (with BigInt overflow paths), Pipeline lifecycle, AbortSignal, fan-out, async stages, and mock native bindings
+3. **Dual-package smoke tests** — verifying CJS and ESM imports both resolve correctly
 
----
-
-## 🤝 Contributing
-
-Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for:
-
-- Code style (rustfmt + prettier)
-- Commit conventions (Conventional Commits)
-- PR checklist (tests + types + docs)
-- Local development workflow
+Target coverage: **≥95%** across all files. Open `coverage/index.html` after `npm run test:coverage`.
 
 ---
 
-## 🗺️ Roadmap
+## Contributing
 
-See [docs/ROADMAP.md](docs/ROADMAP.md) for the full plan. Highlights:
+PRs welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) for:
 
-- **v0.2** — GPU buffer abstractions + hardware-accelerated paths
-- **v0.3** — Real-time / streaming primitives (WebRTC interop)
-- **v0.4** — First-class plugin system for third-party stages
-- **v1.0** — Stable API, all Kryx ecosystem packages on top
+- Code style (rustfmt + prettier, enforced)
+- Conventional Commits
+- PR checklist (tests + types + docs + changelog)
+
+Out of scope for this package (belongs in `@brashkie/media-*`):
+- Codec implementations
+- Container parsing
+- Streaming protocols
+- AI/ML models
+- CLI tools
+
+When in doubt, [open a discussion](https://github.com/Brashkie/media-core/discussions) first.
 
 ---
 
-## ❓ FAQ
+## Roadmap
+
+See [docs/ROADMAP.md](docs/ROADMAP.md) for the full plan.
+
+| Version | Focus | Target |
+|---------|-------|--------|
+| **0.1.x** | Foundations (current) | ✅ Shipped |
+| **0.2** | GPU buffer abstractions + hw-accel primitives | Q2 2026 |
+| **0.3** | Real-time / streaming (RTP, WebRTC types, jitter buffer) | Q3 2026 |
+| **0.4** | Plugin system for third-party stages | Q4 2026 |
+| **1.0** | Stable API + all Kryx packages on top | Q2 2027 |
+
+---
+
+## FAQ
 
 <details>
 <summary><b>Do I need Rust installed to use this?</b></summary>
 
-No. Prebuilt binaries are shipped for all supported platforms via npm `optionalDependencies`. Just `npm install @brashkie/media-core`.
+No. Prebuilt binaries are shipped for all supported platforms via npm `optionalDependencies`. Just `npm install @brashkie/media-core` and you're set.
 
-You only need Rust if you're **contributing** or building from source.
+You only need Rust if you're contributing or building from source.
 </details>
 
 <details>
 <summary><b>Why two languages (Rust + Zig)?</b></summary>
 
-Rust owns the orchestration: pipelines, async, networking, plugins, ABI to Node. Zig owns the hottest paths: codec internals, SIMD, GPU compute. Each language wins at its layer.
+Rust handles orchestration: pipelines, async, networking, plugins, ABI to Node. Zig handles the hottest paths: codec internals, SIMD, GPU shaders. Each language wins at its layer.
 
 See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full reasoning.
 </details>
@@ -429,43 +531,63 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full reasoning.
 <details>
 <summary><b>How does this compare to FFmpeg?</b></summary>
 
-FFmpeg is a complete (and brilliant) C codebase from 2000. `media-core` is the **foundation** for a modern, ecosystem-driven alternative built around:
+FFmpeg is a brilliant, mature, complete C codebase from 2000. `media-core` is the **foundation** for a modern alternative built around:
 
-- Composable modules instead of one monolith
-- Native async + streams (no callbacks)
-- Memory safety by default (Rust)
-- Real-time and AI built in from day one (later packages)
+- Composable npm modules instead of one monolith
+- Native `async`/`await` (no callbacks, no threads to manage)
+- Memory safety by default
+- Real-time, AI, and GPU as first-class citizens in later packages
 
-This package alone does NOT replace FFmpeg — it's the toolkit other Kryx packages use to gradually build something equivalent.
+This single package does not replace FFmpeg — it's the toolkit Kryx packages use to build something equivalent, gradually.
 </details>
 
 <details>
 <summary><b>Is this production-ready?</b></summary>
 
-The API is stable in spirit but still pre-1.0. We do not guarantee breaking changes won't happen between minor versions before 1.0. After 1.0 we follow strict semver.
+The API is stable in spirit but still pre-1.0. We may introduce breaking changes between minor versions before 1.0.
 
-For production use today: pin to an exact version (`"0.1.0"` not `"^0.1.0"`).
+For production today: **pin the exact version** (`"0.1.2"` not `"^0.1.2"`).
+
+After 1.0, strict semver applies.
 </details>
 
 <details>
-<summary><b>How does it relate to napi-rs?</b></summary>
+<summary><b>How is `MediaBuffer` zero-copy?</b></summary>
 
-`napi-rs` is the FFI bridge we use to expose Rust types to Node.js. The `crates/mc-node` crate contains `#[napi]` annotations; everything else is plain Rust in `crates/mc-core`.
+Internally it's a `bytes::Bytes` (Rust's refcounted `Arc<[u8]>`). Cloning increments the refcount; slicing returns a new view into the same allocation. No `memcpy` ever happens during pipeline traversal — only at the original construction site.
+
+```ts
+const a = MediaBuffer.video(hugePayload, 0)
+const b = a   // same allocation, refcount = 2
+const c = b   // same allocation, refcount = 3
+```
+</details>
+
+<details>
+<summary><b>What about WASM / browser support?</b></summary>
+
+Not yet, but it's on the roadmap (post-1.0). The Rust core is browser-compatible in principle; the napi-rs layer would be replaced with `wasm-bindgen`.
+</details>
+
+<details>
+<summary><b>How do I report a security issue?</b></summary>
+
+Don't open a public issue. Email **security@brashkie.dev** and follow the [Security Policy](SECURITY.md).
 </details>
 
 ---
 
-## 📜 License
+## License
 
-Licensed under [Apache-2.0](LICENSE).
+[Apache-2.0](LICENSE).
 
-Copyright © 2025 [Brashkie](https://github.com/Brashkie). All rights reserved.
+Copyright © 2026 [Brashkie](https://github.com/Brashkie).
 
 ---
 
 <div align="center">
 
-**Made with 🦀 + ⚡ for the modern multimedia web.**
+Made with 🦀 + ⚡ for the modern multimedia web.
 
 [Website](https://kryx.dev) · [Issues](https://github.com/Brashkie/media-core/issues) · [Discussions](https://github.com/Brashkie/media-core/discussions)
 

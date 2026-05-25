@@ -20,9 +20,9 @@
   },
   "scripts": {
     "preartifacts": "node scripts/create-npm-dirs.js",
-    "artifacts": "node scripts/create-npm-dirs.js",
-    "build:native": "napi build --platform --release --manifest-path crates/mc-node/Cargo.toml --package-json-path crates/mc-node/package.json --output-dir . --js index.js --dts index.d.ts",
-    "build:native:debug": "napi build --platform --manifest-path crates/mc-node/Cargo.toml --package-json-path crates/mc-node/package.json --output-dir . --js index.js --dts index.d.ts",
+    "artifacts": "napi artifacts",
+    "build:native": "napi build --platform --release --cargo-cwd crates/mc-node --js index.js --dts index.d.ts",
+    "build:native:debug": "napi build --platform --cargo-cwd crates/mc-node --js index.js --dts index.d.ts",
     "build:ts": "tsup",
     "build": "npm run build:native && npm run build:ts",
     "build:debug": "npm run build:native:debug && npm run build:ts",
@@ -44,7 +44,7 @@
     "format:rust": "cargo fmt --all",
     "clippy": "cargo clippy --workspace --all-targets -- -D warnings",
     "clean": "node -e \"const fs=require('fs');['dist','target','index.js','index.d.ts','npm'].forEach(p=>fs.rmSync(p,{recursive:true,force:true}));fs.readdirSync('.').filter(f=>f.endsWith('.node')).forEach(f=>fs.rmSync(f,{force:true}));console.log('✓ Cleaned')\"",
-    "version": "node scripts/sync-versions.js && git add package.json crates/mc-node/package.json"
+    "version": "napi version"
   },
   "files": [
     "dist/",
@@ -84,6 +84,18 @@
   "engines": {
     "node": ">= 18"
   },
+  "napi": {
+    "name": "media-core",
+    "triples": {
+      "defaults": true,
+      "additional": [
+        "x86_64-unknown-linux-musl",
+        "aarch64-unknown-linux-gnu",
+        "aarch64-apple-darwin",
+        "aarch64-pc-windows-msvc"
+      ]
+    }
+  },
   "optionalDependencies": {
     "@brashkie/media-core-win32-x64-msvc": "0.1.2",
     "@brashkie/media-core-win32-arm64-msvc": "0.1.2",
@@ -94,7 +106,7 @@
     "@brashkie/media-core-linux-arm64-gnu": "0.1.2"
   },
   "devDependencies": {
-    "@napi-rs/cli": "^3.0.0",
+    "@napi-rs/cli": "^2.18.4",
     "@types/node": "^20.11.0",
     "@typescript-eslint/eslint-plugin": "^7.0.0",
     "@typescript-eslint/parser": "^7.0.0",

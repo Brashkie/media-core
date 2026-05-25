@@ -75,6 +75,7 @@ try {
   // ability to throw a user-friendly error if the native binary is missing.
   // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports
   nativeAddon = require('../index.js') as NativeAddon
+  /* c8 ignore next 7 -- defensive: only fires when the .node binary is missing/corrupt */
 } catch (err) {
   const msg = err instanceof Error ? err.message : String(err)
   throw new Error(
