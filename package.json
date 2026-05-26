@@ -1,6 +1,6 @@
 {
   "name": "@brashkie/media-core",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Core engine for the Kryx multimedia ecosystem — buffers, pipelines, and runtime (ESM + CJS + TypeScript)",
   "type": "commonjs",
   "main": "./dist/index.cjs",
@@ -23,7 +23,7 @@
     "artifacts": "napi artifacts",
     "build:native": "napi build --platform --release --cargo-cwd crates/mc-node --js index.js --dts index.d.ts",
     "build:native:debug": "napi build --platform --cargo-cwd crates/mc-node --js index.js --dts index.d.ts",
-    "build:ts": "tsup",
+    "build:ts": "tsup && node scripts/fix-dts.js",
     "build": "npm run build:native && npm run build:ts",
     "build:debug": "npm run build:native:debug && npm run build:ts",
     "typecheck": "tsc --noEmit",
@@ -98,16 +98,16 @@
     }
   },
   "optionalDependencies": {
-    "@brashkie/media-core-win32-x64-msvc": "0.1.2",
-    "@brashkie/media-core-win32-arm64-msvc": "0.1.2",
-    "@brashkie/media-core-darwin-x64": "0.1.2",
-    "@brashkie/media-core-darwin-arm64": "0.1.2",
-    "@brashkie/media-core-linux-x64-gnu": "0.1.2",
-    "@brashkie/media-core-linux-x64-musl": "0.1.2",
-    "@brashkie/media-core-linux-arm64-gnu": "0.1.2"
+    "@brashkie/media-core-win32-x64-msvc": "0.1.3",
+    "@brashkie/media-core-win32-arm64-msvc": "0.1.3",
+    "@brashkie/media-core-darwin-x64": "0.1.3",
+    "@brashkie/media-core-darwin-arm64": "0.1.3",
+    "@brashkie/media-core-linux-x64-gnu": "0.1.3",
+    "@brashkie/media-core-linux-x64-musl": "0.1.3",
+    "@brashkie/media-core-linux-arm64-gnu": "0.1.3"
   },
   "devDependencies": {
-    "@napi-rs/cli": "^2.18.4",
+    "@napi-rs/cli": "2.18.4",
     "@types/node": "^20.11.0",
     "@typescript-eslint/eslint-plugin": "^7.0.0",
     "@typescript-eslint/parser": "^7.0.0",

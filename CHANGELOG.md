@@ -29,7 +29,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [0.1.2] — 2025-01-15
+## [0.1.3] — 2026-05-25
+
+### Fixed
+- **Critical**: The `tsup` build only emitted a single `.d.mts` file even though
+  `outExtension` requested both `.d.cts` and `.d.mts`. This is a known tsup
+  limitation when `dts: true` is combined with a multi-format config. As a
+  result, TypeScript consumers using CommonJS resolution (the default for
+  `"type": "commonjs"` packages) couldn't find type declarations for
+  `@brashkie/media-core`, falling back to `any`.
+- Switched `tsup.config.ts` to a two-pass configuration (one per format),
+  each with its own `dts: true`. Now `dist/` correctly contains
+  `index.d.cts`, `index.d.cts.map`, `index.d.mts`, `index.d.mts.map`.
+- Consumers of `@brashkie/media-core` from CJS projects (e.g.
+  `@brashkie/media-codecs`) now get proper type resolution.
+
+---
+
+## [0.1.2] — 2026-05-25
 
 ### Fixed
 - `tsup` DTS build failed because the auto-generated `index.d.ts` from napi
@@ -45,7 +62,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [0.1.1] — 2025-01-10
+## [0.1.1] — 2026-05-24
 
 ### Fixed
 - CI/build: migrated from `@napi-rs/cli` v2 to v3 syntax (`--cargo-cwd` →
@@ -66,7 +83,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [0.1.0] — 2025-01-01
+## [0.1.0] — 2026-05-24
 
 **First public release.** Foundation layer of the Kryx ecosystem.
 
@@ -136,7 +153,8 @@ This is a **pre-1.0 release**. The public API may change in minor versions befor
 
 ---
 
-[Unreleased]: https://github.com/Brashkie/media-core/compare/v0.1.2...HEAD
+[Unreleased]: https://github.com/Brashkie/media-core/compare/v0.1.3...HEAD
+[0.1.3]: https://github.com/Brashkie/media-core/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/Brashkie/media-core/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/Brashkie/media-core/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/Brashkie/media-core/releases/tag/v0.1.0

@@ -1,5 +1,13 @@
 import { defineConfig } from 'tsup'
 
+/**
+ * tsup config for @brashkie/media-core
+ *
+ * Generates dual-package output. Per-format DTS files (.d.cts / .d.mts) are
+ * created by a separate post-build script (scripts/fix-dts.js) because
+ * tsup 8.x has a bug where `outExtension.dts` is ignored for `dts: true`
+ * in multi-format mode, AND `onSuccess` runs before the DTS build finishes.
+ */
 export default defineConfig({
   entry: ['src/index.ts'],
   format: ['cjs', 'esm'],
@@ -9,13 +17,11 @@ export default defineConfig({
   sourcemap: true,
   splitting: false,
   treeshake: true,
-  shims: true, // inject CJS-compat shims into ESM (require, __dirname, __filename)
+  shims: true,
   outExtension({ format }) {
     return {
       js: format === 'esm' ? '.mjs' : '.cjs',
-      dts: format === 'esm' ? '.d.mts' : '.d.cts',
     }
   },
-  // The native addon path must remain external — never bundle it.
   external: ['../index.js', '../index'],
 })

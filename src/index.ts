@@ -120,4 +120,4 @@ export * from './error'
 // ─── Package version ────────────────────────────────────────────────────────
 
 /** npm package version of `@brashkie/media-core`. */
-export const VERSION = '0.1.2'
+export const VERSION = '0.1.3'
