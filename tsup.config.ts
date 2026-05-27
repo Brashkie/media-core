@@ -3,25 +3,31 @@ import { defineConfig } from 'tsup'
 /**
  * tsup config for @brashkie/media-core
  *
- * Generates dual-package output. Per-format DTS files (.d.cts / .d.mts) are
- * created by a separate post-build script (scripts/fix-dts.js) because
- * tsup 8.x has a bug where `outExtension.dts` is ignored for `dts: true`
- * in multi-format mode, AND `onSuccess` runs before the DTS build finishes.
+ * Pattern proven by @brashkie/signalis-core:
+ *   - No `shims: true` (it generates a broken __require helper)
+ *   - The native addon is loaded via `import * as native from '../index.js'`
+ *     which becomes a literal `require('../index.js')` in CJS output and a
+ *     literal `import` in ESM — both supported natively by Node.
+ *   - `external` keeps tsup from bundling the native loader.
  */
 export default defineConfig({
   entry: ['src/index.ts'],
   format: ['cjs', 'esm'],
   dts: true,
-  clean: true,
-  outDir: 'dist',
-  sourcemap: true,
   splitting: false,
-  treeshake: true,
-  shims: true,
+  sourcemap: true,
+  clean: true,
+  minify: false,
+  target: 'node18',
+  outDir: 'dist',
+  // The native addon stays outside the bundle.
+  external: ['../index.js', '../index.cjs', './native'],
+  // Explicit extensions:
+  //   .cjs → always CommonJS
+  //   .mjs → always ESM
   outExtension({ format }) {
     return {
-      js: format === 'esm' ? '.mjs' : '.cjs',
+      js: format === 'cjs' ? '.cjs' : '.mjs',
     }
   },
-  external: ['../index.js', '../index'],
 })

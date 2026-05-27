@@ -12,37 +12,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - *(nothing yet — see [ROADMAP](docs/ROADMAP.md))*
 
-### Changed
-- *(nothing yet)*
+---
 
-### Deprecated
-- *(nothing yet)*
-
-### Removed
-- *(nothing yet)*
+## [0.1.4] — 2026-05-26
 
 ### Fixed
-- *(nothing yet)*
+- **Critical for downstream consumers**: tsup's `shims: true` option rewrote
+  the runtime `require('../index.js')` into a `__require()` helper that
+  throws `'Dynamic require of "../index.js" is not supported'` whenever
+  `require` is not available at runtime. This broke any consumer running
+  inside Vitest, Vite, or other tools that load CJS via an ESM wrapper —
+  including `@brashkie/media-codecs` tests.
+- Removed `shims: true` from `tsup.config.ts`.
+- Rewrote `src/index.ts` to use `createRequire` from `node:module`
+  explicitly, with a CJS/ESM dual-path that resolves the module base from
+  either `__filename` or `import.meta.url`. Now works identically in
+  Node CJS, Node ESM, and Vitest.
 
-### Security
-- *(nothing yet)*
+### Notes
+- Consumers of `@brashkie/media-core` should upgrade to `^0.1.4`.
+- `0.1.3` is being deprecated on npm.
 
 ---
 
 ## [0.1.3] — 2026-05-25
 
 ### Fixed
-- **Critical**: The `tsup` build only emitted a single `.d.mts` file even though
-  `outExtension` requested both `.d.cts` and `.d.mts`. This is a known tsup
-  limitation when `dts: true` is combined with a multi-format config. As a
-  result, TypeScript consumers using CommonJS resolution (the default for
-  `"type": "commonjs"` packages) couldn't find type declarations for
-  `@brashkie/media-core`, falling back to `any`.
-- Switched `tsup.config.ts` to a two-pass configuration (one per format),
-  each with its own `dts: true`. Now `dist/` correctly contains
-  `index.d.cts`, `index.d.cts.map`, `index.d.mts`, `index.d.mts.map`.
-- Consumers of `@brashkie/media-core` from CJS projects (e.g.
-  `@brashkie/media-codecs`) now get proper type resolution.
+- tsup build only emitted a single `.d.mts` file even though `outExtension`
+  requested both `.d.cts` and `.d.mts`. Switched to a post-build script
+  (`scripts/fix-dts.js`) that duplicates `index.d.ts` into the per-format
+  variants required by the `exports` map.
+
+### Known issues
+- The `shims: true` config still broke downstream consumers (fixed in 0.1.4).
 
 ---
 
@@ -55,7 +57,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Native addon loading: `index.js` placeholder now gracefully stubs when
   the `.node` binary is missing, throwing only on actual use.
 - ESM build: enabled `tsup` `shims: true` so the runtime `require()` of the
-  native addon works in both CJS and ESM outputs.
+  native addon works in both CJS and ESM outputs. **NOTE**: this turned out
+  to be incorrect — fixed in 0.1.4.
 
 ### Changed
 - `MediaBuffer` is now exported as both a value (constructor) and a type alias.
@@ -65,21 +68,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.1.1] — 2026-05-24
 
 ### Fixed
-- CI/build: migrated from `@napi-rs/cli` v2 to v3 syntax (`--cargo-cwd` →
-  `--manifest-path` + `--package-json-path`).
-- napi v3 requires a `package.json` in the binding crate folder
-  (`crates/mc-node/package.json`) with `napi.binaryName` and `napi.targets`.
-  Added.
+- CI/build: migrated from `@napi-rs/cli` v2 to v3 syntax — but later reverted
+  in 0.1.2 because v3 requires Node 20+, breaking our Alpine CI on Node 18.
 - `scripts/create-npm-dirs.js` now also copies the `.node` binaries from
-  CI artifacts into each per-platform npm package directory — previously
-  only the `package.json` files were created, so the published packages
-  were missing the actual native binary.
-- `npm version` script no longer relies on `napi version` (changed in v3);
-  uses `scripts/sync-versions.js` instead to propagate version bumps.
-
-### Changed
-- Removed legacy `napi.triples` from root `package.json` (napi v3 reads
-  config from `crates/mc-node/package.json` instead).
+  CI artifacts into each per-platform npm package directory.
 
 ---
 
@@ -88,72 +80,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 **First public release.** Foundation layer of the Kryx ecosystem.
 
 ### Added
-
-#### Core types
 - `MediaBuffer` — zero-copy refcounted frame buffer with metadata
-- `MediaBufferMut` — growable buffer for incremental writes
-- `FrameFlags` bitflags: `KEYFRAME`, `CORRUPT`, `DISCARD`, `END_OF_STREAM`, `DECODED`, `ENCODED`
-- `VideoMeta`, `AudioMeta`, `FrameMeta` — type-specific metadata
-- `Timestamp` + `Timebase` — exact rational timestamp arithmetic (BigInt-backed in TS)
+- `Pipeline` + `PipelineBuilder` with async stages, fan-out, AbortSignal
+- Built-in stages: `PassthroughStage`, `DropStage`, `CounterStage`, `tapStage`
+- `Timebase` + `Timestamp` for exact rational timestamp arithmetic
 - `MediaType`, `CodecId`, `PixelFormat`, `SampleFormat` discriminants
-- `StreamInfo` for container metadata
-
-#### Pipeline
-- `Pipeline` + `PipelineBuilder` (both Rust and TypeScript)
-- `Stage` trait/interface with `process`, `onStart`, `onStop`
-- Built-in stages: `PassthroughStage`, `DropStage`, `CounterStage`
-- `tapStage()` helper for side-effect stages
-- Frame-by-frame processing, batch (`processBatch`), and stream (`processStream`)
-- Fan-out (return multiple frames) and drop (return empty) semantics
-- AbortSignal support for cooperative cancellation
-- `onError` hook for centralized error handling
-- Auto-start on first `process()` call
-- Idempotent `start()` / `stop()`
-
-#### Synchronization
-- `MasterClock` with configurable clock source (audio/video/external)
-- `StreamClock` with drift computation in milliseconds
-- Configurable drift threshold (`MAX_DRIFT_MS`)
-- `wait_duration()` and `should_skip()` helpers
-
-#### I/O
-- `MediaSource` async trait for readers
-- `MediaSink` async trait for writers
-- `MemorySource` / `MemorySink` for testing
-- `SeekMode` enum: `Backward`, `Forward`, `Exact`
-
-#### FFI bridge
-- `ZigBufferView` and `ZigBufferOut` C-compatible types
-- `ZigResult` C-compatible return codes
-- `zig_module_version()` and `probe_zig_runtime()` safe wrappers
-- `link-zig` feature flag — defaults to internal stubs
-
-#### Error handling
-- `MediaError` base class with `kind`, `context`, `details`, ES2022 `cause`
-- Subclasses: `BufferError`, `PipelineError`, `IoError`, `FfiError`, `SyncError`
-- Type guards: `MediaError.is()`, `MediaError.isKind()`
-- Normalization helper: `MediaError.from(unknown)`
-- Predicates: `isFatal`, `isRecoverable`
-- `toJSON()` for safe serialization
-
-#### Tooling
+- `MediaError` hierarchy with `kind`, `context`, `details`, ES2022 `cause`
+- `MasterClock` + `StreamClock` for A/V synchronization
+- `MediaSource` + `MediaSink` async I/O traits
+- FFI bridge for Zig modules (feature-gated)
 - Dual ESM + CJS build via `tsup` with proper `.d.mts` / `.d.cts`
 - TypeScript 6.0 strict mode
-- Per-platform native packages: win32-x64-msvc, win32-arm64-msvc, darwin-x64, darwin-arm64, linux-x64-gnu, linux-x64-musl, linux-arm64-gnu
-- CI matrix across Linux / macOS / Windows × Node 18, 20, 22
-- Vitest test suite with native addon mocking
-- ≥95% coverage target with v8 provider
-- Rust + TypeScript example files (ESM, CJS, TS)
-- ESLint + Prettier + clippy + rustfmt configurations
-- Documentation: README (en/es), ARCHITECTURE, ROADMAP, CONTRIBUTING, SECURITY, CODE_OF_CONDUCT
-
-### Notes
-
-This is a **pre-1.0 release**. The public API may change in minor versions before 1.0. Pin to exact versions in production.
+- 7 platforms supported via per-platform npm sub-packages
+- Cross-platform CI
+- 16 Rust tests + 85+ TypeScript tests
+- ≥95% coverage target
 
 ---
 
-[Unreleased]: https://github.com/Brashkie/media-core/compare/v0.1.3...HEAD
+[Unreleased]: https://github.com/Brashkie/media-core/compare/v0.1.4...HEAD
+[0.1.4]: https://github.com/Brashkie/media-core/compare/v0.1.3...v0.1.4
 [0.1.3]: https://github.com/Brashkie/media-core/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/Brashkie/media-core/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/Brashkie/media-core/compare/v0.1.0...v0.1.1
