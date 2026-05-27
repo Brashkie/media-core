@@ -173,7 +173,7 @@ dependencies = [
 
 [[package]]
 name = "mc-core"
-version = "0.1.0"
+version = "0.1.4"
 dependencies = [
  "anyhow",
  "arc-swap",
@@ -194,7 +194,7 @@ dependencies = [
 
 [[package]]
 name = "mc-node"
-version = "0.1.0"
+version = "0.1.4"
 dependencies = [
  "mc-core",
  "napi",

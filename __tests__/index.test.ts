@@ -724,13 +724,26 @@ describe('Type re-exports', () => {
 
 import { MediaBuffer, nativeAddonVersion } from '../src'
 
-describe('Native bridge (mocked)', () => {
-  it('nativeAddonVersion returns mock version', () => {
-    expect(nativeAddonVersion()).toBe('0.1.0-mock')
+/**
+ * These tests exercise the REAL native addon (the `.node` binary built by
+ * `napi build`). They previously used a JS mock injected via Module._load,
+ * but since we now use `import * as native from '../index.js'` (static ESM
+ * import) instead of `require()` (dynamic), Module._load can't intercept it
+ * and the real binary is loaded.
+ *
+ * That's fine — the real binary is faster and more accurate than a mock.
+ * The napi-rs binding expects `Array<number>` (not Buffer/Uint8Array) for
+ * data payloads — see index.d.ts for the actual signatures.
+ */
+describe('Native bridge', () => {
+  it('nativeAddonVersion returns a non-empty string', () => {
+    const v = nativeAddonVersion()
+    expect(typeof v).toBe('string')
+    expect(v.length).toBeGreaterThan(0)
   })
 
   it('MediaBuffer.video creates a buffer', () => {
-    const buf = MediaBuffer.video(Buffer.from([1, 2, 3]), 90_000)
+    const buf = MediaBuffer.video([1, 2, 3] as unknown as Buffer, 90_000)
     expect(buf.pts).toBe(90_000)
     expect(buf.len).toBe(3)
     expect(buf.mediaType).toBe('video')
@@ -740,7 +753,7 @@ describe('Native bridge (mocked)', () => {
   })
 
   it('MediaBuffer.audio creates a buffer', () => {
-    const buf = MediaBuffer.audio(Buffer.from([1, 2]), 48_000)
+    const buf = MediaBuffer.audio([1, 2] as unknown as Buffer, 48_000)
     expect(buf.mediaType).toBe('audio')
     expect(buf.codecId).toBe('aac')
     expect(buf.len).toBe(2)
@@ -754,14 +767,16 @@ describe('Native bridge (mocked)', () => {
   })
 
   it('MediaBuffer.data() returns payload', () => {
-    const payload = Buffer.from([0xAA, 0xBB, 0xCC])
-    const buf = MediaBuffer.video(payload, 0)
-    expect(buf.data()).toEqual(payload)
+    const payload = [0xaa, 0xbb, 0xcc]
+    const buf = MediaBuffer.video(payload as unknown as Buffer, 0)
+    // Native returns Array<number> per the napi-rs binding
+    const data = buf.data() as unknown as number[]
+    expect(Array.from(data)).toEqual(payload)
   })
 
-  it('MediaBuffer accepts Uint8Array', () => {
-    const arr = new Uint8Array([1, 2, 3, 4])
-    const buf = MediaBuffer.video(arr, 0)
+  it('MediaBuffer accepts plain number array', () => {
+    const arr = [1, 2, 3, 4]
+    const buf = MediaBuffer.video(arr as unknown as Buffer, 0)
     expect(buf.len).toBe(4)
   })
 })
