@@ -35,7 +35,7 @@ Eso es todo. La API pública de TypeScript es **idéntica** — solo cambia el n
 
 ## ¿Cuál es la diferencia?
 
-| Aspecto | `@brashkie/media-core@0.1.4` | `@kryxjs/core@0.1.0` |
+| Aspecto | `@brashkie/media-core@0.1.5` | `@kryxjs/core@0.1.0` |
 |---------|------------------------------|----------------------|
 | Estado | 🔴 Obsoleto | 🟢 Desarrollo activo |
 | Repositorio | `Brashkie/media-core` | [`Brashkie/kryx-core`](https://github.com/Brashkie/kryx-core) |
@@ -44,14 +44,6 @@ Eso es todo. La API pública de TypeScript es **idéntica** — solo cambia el n
 | Funcionalidades futuras | ❌ ninguna | ✅ todo el trabajo nuevo está aquí |
 
 El paquete sucesor es parte del ecosistema más amplio **[Kryx](https://github.com/Brashkie/kryx-core)** — una alternativa modular a FFmpeg para Node.js, organizada bajo el scope `@kryxjs/*`.
-
----
-
-## ¿Por qué el cambio de nombre?
-
-El scope `@kryxjs/*` agrupa todos los paquetes del ecosistema Kryx juntos (`@kryxjs/core`, `@kryxjs/codecs`, `@kryxjs/codecs-opus`, etc.), haciendo el ecosistema más fácil de descubrir y mantener.
-
-`@brashkie/media-core` era el nombre del prototipo. `@kryxjs/core` es el nombre de producción.
 
 ---
 
@@ -78,7 +70,15 @@ Si ya usabas `Buffer.from(...)` (la forma natural), no necesitas cambiar nada en
 
 ---
 
-## Lo que **NO** cambió
+## ¿Por qué el cambio de nombre?
+
+El scope `@kryxjs/*` agrupa todos los paquetes del ecosistema Kryx juntos (`@kryxjs/core`, `@kryxjs/codecs`, `@kryxjs/codecs-opus`, etc.), haciendo el ecosistema más fácil de descubrir y mantener.
+
+`@brashkie/media-core` era el nombre del prototipo. `@kryxjs/core` es el nombre de producción.
+
+---
+
+## Lo que NO cambió
 
 - API pública de TypeScript (cada clase, función, tipo y firma)
 - Jerarquía de `MediaError` y todos los tipos de error
@@ -90,12 +90,12 @@ Si ya usabas `Buffer.from(...)` (la forma natural), no necesitas cambiar nada en
 
 ---
 
-## Estado de `@brashkie/media-core`
+## Estado
 
-- `@brashkie/media-core@0.1.4` es la **última versión funcional**.
-- Está **obsoleta** en npm con un aviso que apunta a `@kryxjs/core`.
-- **No** recibirá nuevas funcionalidades. Solo correcciones críticas de seguridad (si surgen) hasta fines de 2026.
+- `@brashkie/media-core@0.1.5` es esta **release de obsolescencia** — mismo código qe 0.1.4 con README deprecated y nota en CHANGELOG.
+- `@brashkie/media-core@0.1.4` es la última versión funcional (también obsoleta).
 - Las versiones 0.1.0–0.1.3 ya estaban obsoletas como rotas.
+- Aquí no se agregarán nuevas funcionalidades. Solo correcciones críticas de seguridad (si surgen) hasta fines de 2026.
 
 ---
 
@@ -109,6 +109,6 @@ Si ya usabas `Buffer.from(...)` (la forma natural), no necesitas cambiar nada en
 
 **👉 Ve a [`@kryxjs/core`](https://www.npmjs.com/package/@kryxjs/core) 👈**
 
-[English README](README.md) · **Español**
+[English](README.md) · **Español**
 
 </div>
